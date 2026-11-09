@@ -6,6 +6,8 @@
 [![Focus](https://img.shields.io/badge/Focus-Event%20Monitoring-orange)](#workflow)
 [![Reporting](https://img.shields.io/badge/Output-HTML%20Report-informational)](#workflow)
 
+![Project architecture](images/architecture.svg)
+
 ## Project overview
 
 This project demonstrates a basic Windows security monitoring workflow in a virtualized lab. I configured Windows audit policies, reviewed recorded events in Event Viewer, used PowerShell to retrieve and filter Security log entries, and generated an HTML report for browser-based review.
