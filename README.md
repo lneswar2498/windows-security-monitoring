@@ -1,160 +1,146 @@
-# Enhancing-Windows-Security-with-Logon-Monitoring-and-Reporting
-Deployed Windows in a virtualized lab environment and configured the system to support security monitoring and reporting. Prepared the necessary Windows settings, logging capabilities, and monitoring components to collect the security-related events. The project focused on event monitoring, and security reporting in a controlled lab environment.
+# Windows Security Monitoring and Event Log Reporting Lab
 
-Project Overview
-================
+> A Windows Server 2022 lab for configuring audit policies, reviewing Security events, collecting logs with PowerShell, and presenting selected event data in an HTML report.
 
-In this project, I set up a Windows Server virtual machine and configured it to monitor security-related activities, especially user logon events.
+[![Platform](https://img.shields.io/badge/Platform-Windows%20Server%202022-blue)](#lab-environment)
+[![Focus](https://img.shields.io/badge/Focus-Event%20Monitoring-orange)](#workflow)
+[![Reporting](https://img.shields.io/badge/Output-HTML%20Report-informational)](#workflow)
 
-The main idea was to understand how Windows records security events, how auditing policies can be configured, and how PowerShell can be used to collect and generate reports from those events.
+## Project overview
 
-I also worked with Windows Event Viewer, Group Policy, IIS Web Server, and Windows Firewall to create a basic security monitoring and reporting environment.
+This project demonstrates a basic Windows security monitoring workflow in a virtualized lab. I configured Windows audit policies, reviewed recorded events in Event Viewer, used PowerShell to retrieve and filter Security log entries, and generated an HTML report for browser-based review.
 
-Tools and Technologies Used
+The exercise focused on understanding how Windows auditing works and how event data can be collected for investigation and reporting. It is a foundational host-monitoring lab, not a production SIEM deployment.
 
-Oracle VirtualBox
+## Lab environment
 
-Windows Server 2022
+| Component | Role |
+|---|---|
+| Oracle VirtualBox | Virtualization |
+| Windows Server 2022 | Monitored system |
+| Microsoft Management Console (MMC) | Management console |
+| Local Group Policy Editor | Audit policy configuration |
+| Windows Event Viewer | Security log review |
+| Windows PowerShell / PowerShell ISE | Event retrieval and reporting |
+| Internet Information Services (IIS) | Local web presentation of report |
+| Windows Defender Firewall | Inbound TCP rule for the report endpoint |
 
-Microsoft Management Console (MMC)
+## Workflow
 
-Local Group Policy Editor
+### 1. Prepare Windows Server
 
-Windows Event Viewer
+Created a Windows Server 2022 virtual machine in Oracle VirtualBox and prepared it for audit-policy configuration and event monitoring.
 
-Windows PowerShell and PowerShell ISE
+### 2. Configure audit policies
 
-Internet Information Services (IIS)
+Opened Microsoft Management Console and added the Group Policy Object Editor snap-in for Local Computer Policy.
 
-Windows Defender Firewall
+Navigated to:
 
-Project Implementation
-=======================
+`Computer Configuration → Windows Settings → Security Settings → Advanced Audit Policy Configuration → System Audit Policies`
 
-STEP-1:- Setting Up the Windows Environment
-------
-I started by setting up a Windows Server virtual machine in VirtualBox. Once the installation was complete, I logged into Windows and prepared the environment for security monitoring.
+Configured selected audit categories and subcategories, including Account Logon, Detailed Tracking, Logon/Logoff, Object Access, Privilege Use, and System. The recorded settings included Credential Validation, Other Account Logon Events, Process Creation, Logon, Special Logon, Registry, and System Events. Success and Failure auditing were enabled for the selected Account Logon subcategories.
 
-STEP-2:- Opening Microsoft Management Console
-------
-I opened the Run dialog and entered mmc to launch Microsoft Management Console.
+### 3. Configure file-system and PowerShell auditing
 
-From there, I added the Group Policy Object Editor snap-in and selected Local Computer Policy to access the security configuration settings.
+Configured Global Object Access Auditing for the File System using the Everyone principal in the lab. Enabled PowerShell Module Logging through Administrative Templates. The original notes also mention changing the script execution policy; execution policy is not a security boundary and should not be treated as a replacement for application control or script monitoring.
 
-STEP-3:- Navigating to Advanced Audit Policy Configuration
-------
-After opening Local Computer Policy, I followed this path:
+### 4. Apply policy changes
 
-Computer Configuration → Windows Settings → Security Settings → Advanced Audit Policy Configuration → System Audit Policies.
+Refreshed policy using:
 
-This section contains different auditing categories that help Windows record security-related activities.
-
-STEP-4:- Configuring Account Logon Auditing
-------
-I started with the Account Logon category and configured the required auditing subcategories, including Credential Validation and Other Account Logon Events.
-
-I enabled Success and Failure auditing for the selected settings to capture relevant authentication activities.
-
-STEP-5:- Configuring Additional Security Audit Policies
-------
-Next, I worked with other auditing categories, including:
-
-Detailed Tracking
-
-Logon/Logoff
-
-Object Access
-
-Privilege Use
-
-System
-
-I configured relevant subcategories such as Process Creation, Logon, Special Logon, Registry, and System Events.
-
-These settings helped increase the visibility of security-related activities on the Windows machine.
-
-STEP-6:- Configuring File System Auditing
-------
-I moved to Global Object Access Auditing and configured the File System auditing settings.
-
-I created an auditing entry using the Everyone principal and selected the required auditing permissions.
-
-The purpose was to configure auditing for file system activities in the lab environment.
-
-STEP-7:- Configuring PowerShell Logging
-------
-After completing the auditing policies, I moved to the Windows PowerShell settings under Administrative Templates.
-
-I configured the script execution policy and enabled PowerShell Module Logging.
-
-This was done to support PowerShell-based monitoring and provide additional visibility into script activity.
-
-STEP-8:- Applying Group Policy Changes
-------
-Once the required configurations were completed, I restarted the Windows machine.
-
-I then opened PowerShell and executed:
-
+```powershell
 gpupdate /force
+```
 
-This command refreshes Group Policy settings so that the configured policies are applied.
+This requests an immediate Group Policy update on the system.
 
-STEP-9:- Monitoring Security Events Using Event Viewer
--------
-After applying the policies, I opened Windows Event Viewer and navigated to:
+### 5. Review events in Event Viewer
 
-Windows Logs → Security
+Opened:
 
-I explored the recorded security events and used the Filter Current Log option to search for specific Event IDs.
+`Event Viewer → Windows Logs → Security`
 
-For example, I examined Event ID 4689, which represents process termination.
+Used Filter Current Log to review selected event IDs. The original lab notes specifically mention Event ID **4689**, which records process termination. It is not a successful-logon event. This distinction matters when interpreting Windows telemetry.
 
-This helped me understand how Windows records system activities and how individual events can be inspected.
+For a focused logon-monitoring extension, review Event ID **4624** for successful logons and **4625** for failed logons, provided the relevant audit policy is enabled and the events are present in the lab.
 
-STEP-10:- Collecting Security Events Using PowerShell
--------
-Next, I used Windows PowerShell ISE to work with security event logs.
+### 6. Retrieve events with PowerShell
 
-I created and executed PowerShell commands using Get-WinEvent to retrieve Windows Security log entries.
+Used `Get-WinEvent` in PowerShell ISE to retrieve Security log entries and filter the results rather than reviewing the entire log manually. The notes identify a script named `login_info.ps1` for working with logon information.
 
-I also worked on filtering events and displaying their details, rather than checking every event manually through Event Viewer.
+Example read-only query for successful and failed logons:
 
-STEP-11:- Creating a PowerShell Script for Logon Information
--------
-I saved a PowerShell script named login_info.ps1 to work with Windows logon information.
+```powershell
+Get-WinEvent -FilterHashtable @{
+    LogName = 'Security'
+    Id      = 4624, 4625
+} -ErrorAction SilentlyContinue |
+Select-Object TimeCreated, Id, ProviderName, Message
+```
 
-After restarting the machine, I executed the script again and checked the recorded events.
+This example illustrates event retrieval; it does not assert that the original script used this exact query.
 
-This helped me understand how PowerShell scripts can simplify security event monitoring.
+### 7. Generate a browser-viewable report
 
-STEP-12:- Installing and Configuring IIS Web Server
-------
-To support browser-based reporting, I opened Server Manager and added the Web Server (IIS) role.
+Installed the IIS Web Server role. Configured a Windows Defender Firewall inbound rule for TCP port 8080 and used the reporting script named `reports.ps1` to export selected Windows Security log information to HTML.
 
-I selected the required IIS components and .NET Framework features and completed the installation.
+Opened the generated report in a browser to review the collected event data in tabular form.
 
-The purpose of this setup was to provide a web environment for displaying the generated security report.
+## Monitoring workflow
 
-STEP-13:- Configuring Windows Firewall
--------
-After setting up IIS, I created a port-based inbound firewall rule for TCP port 8080.
+```text
+Windows Server 2022
+        |
+        v
+Advanced Audit Policies
+        |
+        v
+Windows Security Event Log
+        |
+        +------> Event Viewer (manual review)
+        |
+        v
+PowerShell / Get-WinEvent
+        |
+        v
+HTML report (reports.ps1)
+        |
+        v
+Browser review through IIS
+```
 
-I selected Allow the Connection and named the rule Allow 8080.
+## Skills demonstrated
 
-This was part of configuring network access for the lab environment.
+- Windows audit-policy configuration using Local Group Policy.
+- Reviewing Security events with Event Viewer.
+- Understanding Windows event IDs and their meanings.
+- Retrieving and filtering event data with PowerShell.
+- Generating an HTML event report.
+- Configuring IIS and a Windows Firewall inbound rule in a lab.
 
-STEP-14:- Generating and Viewing the Security Report
--------
-Finally, I worked with a PowerShell reporting script named reports.ps1.
+## Important event-ID note
 
-The script retrieved Windows Security log information and exported the results into an HTML report.
+| Event ID | Meaning |
+|---|---|
+| 4624 | Successful logon |
+| 4625 | Failed logon |
+| 4689 | Process termination |
 
-I then opened the generated report through a web browser and viewed the collected security event information in tabular format.
+Event availability and detail depend on audit policy, Windows version, and the activity being recorded. Do not infer an account compromise from an event ID alone; correlate account, logon type, source address, timestamp, host, and surrounding activity.
 
-This completed the monitoring and reporting workflow.
+## Evidence and limitations
 
-Project Outcome
-================
-Through this project, I gained practical experience in configuring Windows auditing policies, monitoring security events, and working with PowerShell to retrieve and report event log information.
+The project notes identify the environment, configuration areas, scripts, and reporting workflow. The repository currently contains no PowerShell script files, sample HTML report, screenshots, or sanitized event exports. The script names are therefore documented as project components, not linked as downloadable source artifacts.
 
-I also learned how different Windows components, including Group Policy, Event Viewer, IIS, and Windows Firewall, can be used together in a basic security monitoring environment.
+For a stronger portfolio, add the actual scripts, a redacted sample report, screenshots of the configured audit policies, and sanitized event samples. Review the scripts before publishing and remove usernames, machine names, IP addresses, and other sensitive details.
+
+## Responsible use
+
+This is a learning lab. Apply audit policy and firewall changes only on systems you administer or are authorized to test. Avoid exposing Security log data or HTML reports to untrusted networks.
+
+## Author
+
+**Naga Venkata Eswara Sastry L**  
+Cybersecurity learner | Aspiring SOC Analyst
+
